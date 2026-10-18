@@ -10,4 +10,7 @@ sealed interface AppRoute : NavKey {
 
     @Serializable
     data object WebView : AppRoute
+
+    @Serializable
+    data object FastWebView : AppRoute
 }

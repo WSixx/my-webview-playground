@@ -10,6 +10,7 @@ import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
+import br.com.lucad.mywebviewplayground.ui.FastWebViewScreen
 import br.com.lucad.mywebviewplayground.ui.HomeScreen
 import br.com.lucad.mywebviewplayground.ui.MainScreen
 import br.com.lucad.mywebviewplayground.ui.navigation.AppRoute
@@ -49,12 +50,24 @@ fun AppNavigation(viewModel: MainViewModel) {
                         viewModel = viewModel,
                         onNavigateToWebView = {
                             backStack.add(AppRoute.WebView)
+                        },
+                        onNavigateToFastWebView = {
+                            backStack.add(AppRoute.FastWebView)
                         }
                     )
                 }
                 is AppRoute.WebView -> NavEntry(key) {
                     MainScreen(
                         viewModel = viewModel,
+                        onBackClick = {
+                            if (backStack.size > 1) {
+                                backStack.removeAt(backStack.lastIndex)
+                            }
+                        }
+                    )
+                }
+                is AppRoute.FastWebView -> NavEntry(key) {
+                    FastWebViewScreen(
                         onBackClick = {
                             if (backStack.size > 1) {
                                 backStack.removeAt(backStack.lastIndex)

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FastWebView Shell</title>
+    <link rel="stylesheet" href="https://appassets.androidplatform.net/assets/global.css">
+    <script src="https://appassets.androidplatform.net/assets/webcomponents.bundle.js"></script>
+</head>
+<body>
+    <div id="app-root"></div>
+
+    <script>
+        (function() {
+            // Helper function to emit messages or ArrayBuffers back to Native via Mojo IPC
+            window.emitToNative = function(data) {
+                if (window.NativeFastBridge && typeof window.NativeFastBridge.postMessage === 'function') {
+                    if (typeof data === 'string') {
+                        window.NativeFastBridge.postMessage(data);
+                    } else if (data instanceof ArrayBuffer || ArrayBuffer.isView(data)) {
+                        window.NativeFastBridge.postMessage(data);
+                    } else {
+                        window.NativeFastBridge.postMessage(JSON.stringify(data));
+                    }
+                } else {
+                    console.warn('[FastWebView Shell] NativeFastBridge is not available.');
+                }
+            };
+
+            let activeComponent = null;
+
+            function handleIncomingMessage(rawEventData) {
+                const receiveTime = Date.now();
+                let msg = rawEventData;
+
+                // Check for ArrayBuffer / binary
+                if (rawEventData instanceof ArrayBuffer) {
+                    const bytes = new Uint8Array(rawEventData);
+                    let preview = "";
+                    for (let i = 0; i < Math.min(bytes.length, 8); i++) {
+                        preview += bytes[i].toString(16).padStart(2, '0') + " ";
+                    }
+                    window.emitToNative({
+                        type: "BINARY_MESSAGE_RECEIVED",
+                        byteLength: rawEventData.byteLength,
+                        previewHex: preview.trim(),
+                        timestamp: Date.now()
+                    });
+                    return;
+                }
+
+                if (typeof rawEventData === 'string') {
+                    try {
+                        msg = JSON.parse(rawEventData);
+                    } catch (e) {
+                        window.emitToNative({
+                            type: "RAW_TEXT_RECEIVED",
+                            payload: rawEventData,
+                            timestamp: Date.now()
+                        });
+                        return;
+                    }
+                }
+
+                if (!msg || !msg.type) return;
+
+                const root = document.getElementById('app-root');
+
+                switch (msg.type) {
+                    case '__MOUNT_COMPONENT__':
+                        if (!root) break;
+                        root.innerHTML = '';
+                        const tag = msg.tag || 'checkout-widget';
+                        activeComponent = document.createElement(tag);
+
+                        const props = msg.props || {};
+                        if (typeof activeComponent.setProps === 'function') {
+                            activeComponent.setProps(props);
+                        } else {
+                            Object.assign(activeComponent, props);
+                        }
+
+                        root.appendChild(activeComponent);
+
+                        window.emitToNative({
+                            type: "COMPONENT_MOUNTED",
+                            tag: tag,
+                            props: props,
+                            mountTimeMs: Date.now() - receiveTime,
+                            timestamp: Date.now()
+                        });
+                        break;
+
+                    case '__UPDATE_PROPS__':
+                        if (activeComponent) {
+                            const newProps = msg.props || {};
+                            if (typeof activeComponent.setProps === 'function') {
+                                activeComponent.setProps(newProps);
+                            } else {
+                                Object.assign(activeComponent, newProps);
+                            }
+                            window.emitToNative({
+                                type: "PROPS_UPDATED",
+                                props: newProps,
+                                timestamp: Date.now()
+                            });
+                        }
+                        break;
+
+                    case '__RESET_COMPONENT__':
+                        if (root) {
+                            root.innerHTML = '';
+                        }
+                        if (activeComponent && typeof activeComponent.onReset === 'function') {
+                            activeComponent.onReset();
+                        }
+                        activeComponent = null;
+                        window.emitToNative({
+                            type: "COMPONENT_RESET",
+                            timestamp: Date.now()
+                        });
+                        break;
+
+                    default:
+                        window.emitToNative({
+                            type: "CUSTOM_MESSAGE",
+                            payload: msg,
+                            timestamp: Date.now()
+                        });
+                        break;
+                }
+            }
+
+            function setupBridgeListener() {
+                if (window.NativeFastBridge) {
+                    if (typeof window.NativeFastBridge.addEventListener === 'function') {
+                        window.NativeFastBridge.addEventListener('message', function(event) {
+                            handleIncomingMessage(event.data);
+                        });
+                    } else {
+                        window.NativeFastBridge.onmessage = function(event) {
+                            handleIncomingMessage(event.data);
+                        };
+                    }
+
+                    // Perform handshake
+                    window.emitToNative({
+                        type: "__HANDSHAKE_READY__",
+                        version: "1.0.0",
+                        timestamp: Date.now()
+                    });
+                } else {
+                    setTimeout(setupBridgeListener, 5);
+                }
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', setupBridgeListener);
+            } else {
+                setupBridgeListener();
+            }
+        })();
+    </script>
+</body>
+</html>

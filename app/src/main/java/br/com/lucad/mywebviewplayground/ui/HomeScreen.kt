@@ -1,9 +1,5 @@
 package br.com.lucad.mywebviewplayground.ui
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,11 +18,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Memory
 import androidx.compose.material.icons.filled.RestartAlt
 import androidx.compose.material.icons.filled.RocketLaunch
 import androidx.compose.material.icons.filled.Speed
-import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -45,8 +41,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -54,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import br.com.lucad.mywebviewplayground.fastwebview.WebViewWarmupPool
 import br.com.lucad.mywebviewplayground.model.BenchmarkMetrics
 import br.com.lucad.mywebviewplayground.ui.theme.MyWebviewPlaygroundTheme
 import br.com.lucad.mywebviewplayground.viewmodel.MainViewModel
@@ -61,7 +56,8 @@ import br.com.lucad.mywebviewplayground.viewmodel.MainViewModel
 @Composable
 fun HomeScreen(
     viewModel: MainViewModel = viewModel(),
-    onNavigateToWebView: () -> Unit
+    onNavigateToWebView: () -> Unit,
+    onNavigateToFastWebView: () -> Unit
 ) {
     val context = LocalContext.current
     val metrics by viewModel.metrics.collectAsStateWithLifecycle()
@@ -77,6 +73,7 @@ fun HomeScreen(
             viewModel.onOpenWebViewClicked()
             onNavigateToWebView()
         },
+        onOpenFastWebView = onNavigateToFastWebView,
         onResetState = { viewModel.resetColdStartAndProcess(context) }
     )
 }
@@ -88,6 +85,7 @@ fun HomeScreenContent(
     isWebViewPrewarmed: Boolean,
     onTogglePrewarm: (Boolean) -> Unit,
     onOpenWebView: () -> Unit,
+    onOpenFastWebView: () -> Unit,
     onResetState: () -> Unit
 ) {
     val scrollState = rememberScrollState()
@@ -153,6 +151,93 @@ fun HomeScreenContent(
                 }
             }
 
+            // Zero-Latency FastWebView Card (Highlight Feature)
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(22.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(18.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Surface(
+                            shape = CircleShape,
+                            color = MaterialTheme.colorScheme.tertiary,
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Default.Bolt,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onTertiary,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+                        Column {
+                            Text(
+                                text = "Zero-Latency FastWebView",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onTertiaryContainer
+                            )
+                            Text(
+                                text = "Mojo IPC • RAM Cache • Warmup Pool",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.8f)
+                            )
+                        }
+                    }
+
+                    Text(
+                        text = "Arquitetura otimizada para latência zero usando Comunicação Direta Chromium Mojo IPC (postMessage via JavaScriptReplyProxy sem evaluateJavascript), Cache RAM de Assets e Pre-Warm Context Pool.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onTertiaryContainer,
+                        lineHeight = 18.sp
+                    )
+
+                    Button(
+                        onClick = onOpenFastWebView,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.tertiary
+                        )
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Bolt,
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Text(
+                                text = "Testar FastWebView (Mojo IPC)",
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
             // Cold Start Explanation Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -175,7 +260,7 @@ fun HomeScreenContent(
                             tint = MaterialTheme.colorScheme.secondary
                         )
                         Text(
-                            text = "Análise de Cold Start na WebView",
+                            text = "Análise de Cold Start na WebView Standard",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface
@@ -309,7 +394,7 @@ fun HomeScreenContent(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
-                                text = "Nenhum teste de Cold Start registrado ainda. Configure o Pre-warm abaixo e clique em 'Abrir WebView Playground' para medir!",
+                                text = "Nenhum teste de Cold Start registrado ainda. Configure o Pre-warm abaixo e clique em 'Abrir WebView Standard' para medir!",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.padding(12.dp)
@@ -374,17 +459,17 @@ fun HomeScreenContent(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Large Action Button: Abrir WebView Playground
+            // Action Button: Abrir Standard WebView Playground
             Button(
                 onClick = onOpenWebView,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(60.dp),
+                    .height(56.dp),
                 shape = RoundedCornerShape(18.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary
                 ),
-                elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp)
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -393,17 +478,17 @@ fun HomeScreenContent(
                     Icon(
                         imageVector = Icons.Default.RocketLaunch,
                         contentDescription = null,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(22.dp)
                     )
                     Text(
-                        text = "Abrir WebView Playground",
-                        fontSize = 16.sp,
+                        text = "Abrir WebView Standard Playground",
+                        fontSize = 15.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                         contentDescription = null,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(18.dp)
                     )
                 }
             }
@@ -479,6 +564,7 @@ fun HomeScreenPreview() {
             isWebViewPrewarmed = false,
             onTogglePrewarm = {},
             onOpenWebView = {},
+            onOpenFastWebView = {},
             onResetState = {}
         )
     }
