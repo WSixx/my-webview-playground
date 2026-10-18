@@ -97,7 +97,7 @@ fun WebViewConfigPanel(
         ) {
             AssistChip(
                 onClick = { onSettingsChange(WebViewSettingsState.Default) },
-                label = { Text("Default") },
+                label = { Text("Default Settings") },
                 leadingIcon = { Icon(Icons.Default.Restore, null) }
             )
 
@@ -179,28 +179,21 @@ fun WebViewConfigPanel(
                 )
 
                 ConfigToggleRow(
-                    label = "JavaScript Enabled",
+                    label = "Enable JavaScript",
                     description = "Enable execution of JS code in WebView",
                     checked = settingsState.javaScriptEnabled,
                     onCheckedChange = { onSettingsChange(settingsState.copy(javaScriptEnabled = it)) }
                 )
 
                 ConfigToggleRow(
-                    label = "DOM Storage (localStorage)",
+                    label = "Enable DOM Storage",
                     description = "Allow web page to store key-value data",
                     checked = settingsState.domStorageEnabled,
                     onCheckedChange = { onSettingsChange(settingsState.copy(domStorageEnabled = it)) }
                 )
 
                 ConfigToggleRow(
-                    label = "Hardware Acceleration",
-                    description = "GPU acceleration layer for rendering",
-                    checked = settingsState.hardwareAccelerationEnabled,
-                    onCheckedChange = { onSettingsChange(settingsState.copy(hardwareAccelerationEnabled = it)) }
-                )
-
-                ConfigToggleRow(
-                    label = "Built-in Zoom Controls",
+                    label = "Enable Built-in Zoom",
                     description = "Enable on-screen zoom mechanisms",
                     checked = settingsState.builtInZoomControls,
                     onCheckedChange = {
@@ -214,24 +207,24 @@ fun WebViewConfigPanel(
                 )
 
                 ConfigToggleRow(
-                    label = "Database Enabled (WebSQL/IndexedDB)",
+                    label = "Enable Database Access",
                     description = "Enable client-side HTML5 databases",
                     checked = settingsState.databaseEnabled,
                     onCheckedChange = { onSettingsChange(settingsState.copy(databaseEnabled = it)) }
                 )
 
                 ConfigToggleRow(
-                    label = "Allow Local File Access",
-                    description = "Permit access to file:/// asset URLs",
-                    checked = settingsState.allowFileAccess,
-                    onCheckedChange = { onSettingsChange(settingsState.copy(allowFileAccess = it)) }
-                )
-
-                ConfigToggleRow(
-                    label = "Allow Content Access",
-                    description = "Enable content:// provider URLs",
-                    checked = settingsState.allowContentAccess,
-                    onCheckedChange = { onSettingsChange(settingsState.copy(allowContentAccess = it)) }
+                    label = "Enable File/Content Access",
+                    description = "Permit access to file:/// and content:// URLs",
+                    checked = settingsState.allowFileAccess && settingsState.allowContentAccess,
+                    onCheckedChange = {
+                        onSettingsChange(
+                            settingsState.copy(
+                                allowFileAccess = it,
+                                allowContentAccess = it
+                            )
+                        )
+                    }
                 )
 
                 ConfigToggleRow(
@@ -239,6 +232,32 @@ fun WebViewConfigPanel(
                     description = "Require user touch gesture for audio/video",
                     checked = settingsState.mediaPlaybackRequiresUserGesture,
                     onCheckedChange = { onSettingsChange(settingsState.copy(mediaPlaybackRequiresUserGesture = it)) }
+                )
+            }
+        }
+
+        // Hardware Acceleration
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
+        ) {
+            Column(
+                modifier = Modifier.padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = "Hardware Acceleration",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(bottom = 4.dp)
+                )
+
+                ConfigToggleRow(
+                    label = "Enable Hardware Acceleration",
+                    description = "GPU acceleration layer for rendering",
+                    checked = settingsState.hardwareAccelerationEnabled,
+                    onCheckedChange = { onSettingsChange(settingsState.copy(hardwareAccelerationEnabled = it)) }
                 )
             }
         }

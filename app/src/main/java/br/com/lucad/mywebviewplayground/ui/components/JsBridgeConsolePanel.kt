@@ -108,7 +108,7 @@ fun JsBridgeConsolePanel(
                     tint = MaterialTheme.colorScheme.primary
                 )
                 Text(
-                    text = "JS Bridge Console",
+                    text = "Native JS Bridge Console",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
@@ -129,7 +129,7 @@ fun JsBridgeConsolePanel(
             IconButton(onClick = onClearLogs) {
                 Icon(
                     imageVector = Icons.Default.CleaningServices,
-                    contentDescription = "Clear Console Logs",
+                    contentDescription = "Clear Logs",
                     tint = MaterialTheme.colorScheme.error
                 )
             }
@@ -145,7 +145,7 @@ fun JsBridgeConsolePanel(
                 value = messageInput,
                 onValueChange = { messageInput = it },
                 modifier = Modifier.weight(1f),
-                placeholder = { Text("Message JSON or text to JS...", fontSize = 12.sp) },
+                placeholder = { Text("Type native JSON or string payload...", fontSize = 12.sp) },
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
@@ -169,7 +169,7 @@ fun JsBridgeConsolePanel(
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.Send,
-                    contentDescription = "Send to JS",
+                    contentDescription = "Send Native Message",
                     tint = MaterialTheme.colorScheme.onPrimary
                 )
             }
@@ -188,17 +188,8 @@ fun JsBridgeConsolePanel(
                     messageInput = preset
                     onSendMessage(preset)
                 },
-                label = { Text("Set Counter = 42", fontSize = 11.sp) },
+                label = { Text("SET_COUNTER", fontSize = 11.sp) },
                 leadingIcon = { Icon(Icons.Default.Code, null, modifier = Modifier.size(14.dp)) }
-            )
-
-            AssistChip(
-                onClick = {
-                    val preset = """{"action": "ECHO", "message": "Hello from Native!"}"""
-                    messageInput = preset
-                    onSendMessage(preset)
-                },
-                label = { Text("Echo Test", fontSize = 11.sp) }
             )
 
             AssistChip(
@@ -207,7 +198,16 @@ fun JsBridgeConsolePanel(
                     messageInput = preset
                     onSendMessage(preset)
                 },
-                label = { Text("Ping", fontSize = 11.sp) }
+                label = { Text("PING", fontSize = 11.sp) }
+            )
+
+            AssistChip(
+                onClick = {
+                    val preset = """{"action": "ECHO", "message": "Hello from Native!"}"""
+                    messageInput = preset
+                    onSendMessage(preset)
+                },
+                label = { Text("ECHO", fontSize = 11.sp) }
             )
         }
 

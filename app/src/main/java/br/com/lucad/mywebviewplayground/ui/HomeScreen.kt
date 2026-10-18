@@ -152,7 +152,7 @@ fun HomeScreenContent(
                         }
                         Column {
                             Text(
-                                text = "WebView Performance",
+                                text = "WebView Performance & Experiments",
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
@@ -214,7 +214,7 @@ fun HomeScreenContent(
                     }
 
                     Text(
-                        text = "Arquitetura otimizada para latência zero usando Comunicação Direta Chromium Mojo IPC (postMessage via JavaScriptReplyProxy sem evaluateJavascript), Cache RAM de Assets e Pre-Warm Context Pool.",
+                        text = "Optimized zero-latency architecture using Direct Chromium Mojo IPC Communication (postMessage via JavaScriptReplyProxy without evaluateJavascript), Asset RAM Cache, and Pre-Warm Context Pool.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onTertiaryContainer,
                         lineHeight = 18.sp
@@ -240,7 +240,7 @@ fun HomeScreenContent(
                                 modifier = Modifier.size(20.dp)
                             )
                             Text(
-                                text = "Testar FastWebView (Mojo IPC)",
+                                text = "⚡ Test FastWebView (Mojo IPC)",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -276,7 +276,7 @@ fun HomeScreenContent(
                             tint = MaterialTheme.colorScheme.secondary
                         )
                         Text(
-                            text = "Análise de Cold Start na WebView Standard",
+                            text = "Cold Start & Engine Initialization",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface
@@ -284,7 +284,7 @@ fun HomeScreenContent(
                     }
 
                     Text(
-                        text = "O Cold Start ocorre quando o motor Chromium e o contexto da WebView são inicializados do zero no processo. Isso envolve carregar bibliotecas nativas C++, criar threads de renderização e iniciar o motor JavaScript V8.",
+                        text = "Analyzes Chromium C++ engine boot, V8 initialization, and DOM ready latency.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         lineHeight = 18.sp
@@ -293,7 +293,7 @@ fun HomeScreenContent(
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
                     Text(
-                        text = "Ao ativar o Pre-warm, a WebView é pré-instanciada em segundo plano, transformando a abertura em Warm Start e reduzindo significativamente a latência Percebida pelo Usuário.",
+                        text = "When Pre-warm is enabled, the WebView is pre-instantiated in the background, converting cold starts to warm starts and significantly reducing User Perceived Latency.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         lineHeight = 18.sp
@@ -329,7 +329,7 @@ fun HomeScreenContent(
                                 tint = MaterialTheme.colorScheme.primary
                             )
                             Text(
-                                text = "Último Benchmark Registrado",
+                                text = "Last Benchmark Recorded",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
@@ -371,7 +371,7 @@ fun HomeScreenContent(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = "Latência Total (Clique → Término)",
+                                        text = "Cold Start Total",
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -386,19 +386,19 @@ fun HomeScreenContent(
                                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
                                 StatRowItem(
-                                    label = "1. Instanciação da WebView:",
+                                    label = "1. WebView Creation:",
                                     value = "${metrics.timeToWebViewCreatedMs} ms"
                                 )
                                 StatRowItem(
-                                    label = "2. Clique → Page Started:",
+                                    label = "2. Click → Page Started:",
                                     value = "${metrics.timeToPageStartedMs} ms"
                                 )
                                 StatRowItem(
-                                    label = "3. Clique → Page Finished:",
+                                    label = "3. Click → Page Finished:",
                                     value = "${metrics.timeToPageFinishedMs} ms"
                                 )
                                 StatRowItem(
-                                    label = "4. Tempo de Carga da Página:",
+                                    label = "4. Page Load Time:",
                                     value = "${metrics.totalLoadTimeMs} ms"
                                 )
                             }
@@ -410,7 +410,7 @@ fun HomeScreenContent(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
-                                text = "Nenhum teste de Cold Start registrado ainda. Configure o Pre-warm abaixo e clique em 'Abrir WebView Standard' para medir!",
+                                text = "No cold start benchmark recorded yet. Enable Pre-warm below and click '🚀 Open WebView Playground' to measure!",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.padding(12.dp)
@@ -449,14 +449,14 @@ fun HomeScreenContent(
                                 tint = if (isPrewarmEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
                             )
                             Text(
-                                text = "Pre-warm WebView em Segundo Plano",
+                                text = "Pre-warm WebView in Background",
                                 style = MaterialTheme.typography.titleSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                         }
                         Text(
-                            text = if (isWebViewPrewarmed) "Status: Motor Chromium Pré-Aquecido e Pronto!" else "Status: Sem pré-aquecimento (Cold Engine)",
+                            text = if (isWebViewPrewarmed) "Status: Pre-warmed Chromium Engine Ready!" else "Status: Cold Engine (No Pre-warm)",
                             style = MaterialTheme.typography.bodySmall,
                             color = if (isWebViewPrewarmed) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -475,7 +475,7 @@ fun HomeScreenContent(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Action Button: Abrir Standard WebView Playground
+            // Action Button: Open WebView Playground
             Button(
                 onClick = onOpenWebView,
                 modifier = Modifier
@@ -497,7 +497,7 @@ fun HomeScreenContent(
                         modifier = Modifier.size(22.dp)
                     )
                     Text(
-                        text = "Abrir WebView Standard Playground",
+                        text = "🚀 Open WebView Playground",
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -527,7 +527,7 @@ fun HomeScreenContent(
                         tint = MaterialTheme.colorScheme.error
                     )
                     Text(
-                        text = "Limpar Estado para Novo Cold Start",
+                        text = "Reset State for Clean Cold Start",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.error

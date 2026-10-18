@@ -112,12 +112,12 @@ fun FastWebViewScreen(
                 title = {
                     Column {
                         Text(
-                            text = "FastWebView Playground",
+                            text = "FastWebView Zero-Latency Playground",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "Mojo IPC • RAM Cache • Zero-Eval",
+                            text = "Mojo IPC • RAM Asset Cache • Zero-Eval Message Passing",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.primary
                         )
@@ -138,7 +138,7 @@ fun FastWebViewScreen(
                     }) {
                         Icon(
                             imageVector = Icons.Default.DeleteSweep,
-                            contentDescription = "Clear Logs"
+                            contentDescription = "Clear Console"
                         )
                     }
                 },
@@ -170,7 +170,7 @@ fun FastWebViewScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = "Selecionar WebComponent:",
+                        text = "Select WebComponent:",
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -194,8 +194,8 @@ fun FastWebViewScreen(
                                 shape = SegmentedButtonDefaults.itemShape(index = index, count = componentTags.size)
                             ) {
                                 Text(
-                                    text = "<$tag>",
-                                    fontSize = 12.sp,
+                                    text = "Mount <$tag>",
+                                    fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold
                                 )
                             }
@@ -320,7 +320,7 @@ fun FastWebViewScreen(
                 ) {
                     Icon(imageVector = Icons.Default.Send, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Update Props", fontSize = 12.sp)
+                    Text("Update Props (zero-eval)", fontSize = 11.sp)
                 }
 
                 Button(
@@ -329,13 +329,12 @@ fun FastWebViewScreen(
                         activeFastWebView?.sendDirectBinary(binaryData)
                         addLog("IPC OUT", "sendDirectBinary(zero-eval ArrayBuffer, 8 bytes)", false)
                     },
-                    modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
                 ) {
                     Icon(imageVector = Icons.Default.DataObject, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Send Binary", fontSize = 12.sp)
+                    Text("Send Binary", fontSize = 11.sp)
                 }
 
                 OutlinedButton(
@@ -345,7 +344,9 @@ fun FastWebViewScreen(
                     },
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Icon(imageVector = Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Icon(imageVector = Icons.Default.Refresh, contentDescription = "Reset Component", modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Reset Component", fontSize = 11.sp)
                 }
             }
 
@@ -371,7 +372,7 @@ fun FastWebViewScreen(
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                             Icon(imageVector = Icons.Default.Terminal, contentDescription = null, modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.primary)
-                            Text("Mojo IPC Event Log", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
+                            Text("Live Mojo IPC & Handshake Console", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
                         }
                         Text("${logs.size} msgs", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }

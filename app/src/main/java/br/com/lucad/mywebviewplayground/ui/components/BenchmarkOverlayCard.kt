@@ -114,7 +114,7 @@ fun BenchmarkOverlayCard(
                         tint = MaterialTheme.colorScheme.primary
                     )
                     Text(
-                        text = "Real-Time Benchmark",
+                        text = "Real-Time Benchmark & Metrics",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
@@ -208,13 +208,13 @@ fun BenchmarkOverlayCard(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = if (metrics.isPrewarmed) "Warm Start (Pre-warmed)" else "Cold Start Benchmark",
+                                        text = if (metrics.isPrewarmed) "Warm Start (Pre-warmed)" else "Cold Start Latency Breakdown",
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.onSurface
                                     )
                                     Text(
-                                        text = "Total: ${metrics.timeToPageFinishedMs} ms",
+                                        text = "Click to Page Finished: ${metrics.timeToPageFinishedMs} ms",
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.primary
@@ -225,12 +225,12 @@ fun BenchmarkOverlayCard(
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
                                     Text(
-                                        text = "WebView Init: ${metrics.timeToWebViewCreatedMs} ms",
+                                        text = "Click to WebView Created: ${metrics.timeToWebViewCreatedMs} ms",
                                         fontSize = 10.sp,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                     Text(
-                                        text = "Page Started: ${metrics.timeToPageStartedMs} ms",
+                                        text = "Click to Page Started: ${metrics.timeToPageStartedMs} ms",
                                         fontSize = 10.sp,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -245,7 +245,7 @@ fun BenchmarkOverlayCard(
                     ) {
                         MetricBadgeItem(
                             icon = Icons.Default.Timer,
-                            label = "Page Load",
+                            label = "Page Load Time",
                             value = "${metrics.totalLoadTimeMs} ms",
                             modifier = Modifier.weight(1f)
                         )
@@ -263,13 +263,13 @@ fun BenchmarkOverlayCard(
                     ) {
                         MetricBadgeItem(
                             icon = Icons.Default.Memory,
-                            label = "Heap Memory",
+                            label = "Heap / Memory PSS",
                             value = "${metrics.usedMemoryMb} / ${metrics.totalMemoryMb} MB",
                             modifier = Modifier.weight(1f)
                         )
                         MetricBadgeItem(
                             icon = Icons.AutoMirrored.Filled.Message,
-                            label = "JS Messages",
+                            label = "JS Bridge Messages",
                             value = "${metrics.jsBridgeMessageCount}",
                             modifier = Modifier.weight(1f)
                         )

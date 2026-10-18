@@ -87,7 +87,7 @@ fun UrlLauncherBar(
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Voltar para Home",
+                            contentDescription = "Back to Home",
                             tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
@@ -116,7 +116,7 @@ fun UrlLauncherBar(
                     modifier = Modifier.weight(1f),
                     placeholder = {
                         Text(
-                            text = "Enter URL or file:///android_asset/...",
+                            text = "Enter custom URL (e.g. https://...)",
                             fontSize = 13.sp
                         )
                     },
