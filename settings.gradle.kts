@@ -20,8 +20,10 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven { url = rootDir.resolve("repo").toURI() }
     }
 }
 
 rootProject.name = "My Webview Playground"
 include(":app")
+include(":webkit")
