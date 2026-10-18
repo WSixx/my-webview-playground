@@ -20,6 +20,9 @@ navigation3Ui = "1.2.0"
 navigation3Runtime = "1.2.0"
 kotlinxSerializationCore = "1.11.0"
 
+# React Native
+reactAndroid = "0.88.0"
+
 # WebKit
 webkit = "1.17.1"
 
@@ -59,6 +62,9 @@ androidx-compose-material-icons-extended = { group = "androidx.compose.material"
 androidx-navigation3-ui = { group = "androidx.navigation3", name = "navigation3-ui", version.ref = "navigation3Ui" }
 androidx-navigation3-runtime = { group = "androidx.navigation3", name = "navigation3-runtime", version.ref = "navigation3Runtime" }
 kotlinx-serialization-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-core", version.ref = "kotlinxSerializationCore" }
+
+# React Native
+react-android = { group = "com.facebook.react", name = "react-android", version.ref = "reactAndroid" }
 
 # WebKit
 androidx-webkit = { group = "androidx.webkit", name = "webkit", version.ref = "webkit" }
