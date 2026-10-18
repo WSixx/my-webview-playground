@@ -69,9 +69,19 @@ class CustomWebViewClient(
 
         var updatedMetrics = BenchmarkMetrics()
         nativeBridge?.updateMetrics { current ->
+            val clickTime = current.navigationClickTimeMs
+            val timeToFinished = if (clickTime > 0 && !current.coldStartRecorded) {
+                finishTime - clickTime
+            } else {
+                current.timeToPageFinishedMs
+            }
+            val markRecorded = if (clickTime > 0) true else current.coldStartRecorded
+
             updatedMetrics = current.copy(
                 pageLoadFinishedTimeMs = finishTime,
                 totalLoadTimeMs = if (duration > 0) duration else current.totalLoadTimeMs,
+                timeToPageFinishedMs = timeToFinished,
+                coldStartRecorded = markRecorded,
                 usedMemoryMb = usedMemory,
                 totalMemoryMb = totalMemory,
                 lastUpdatedTimestamp = finishTime,

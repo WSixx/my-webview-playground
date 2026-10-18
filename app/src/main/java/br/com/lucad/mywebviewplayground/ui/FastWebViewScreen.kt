@@ -31,12 +31,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.DataObject
 import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Memory
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Terminal
 import androidx.compose.material3.Button
@@ -69,8 +69,10 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import br.com.lucasgoncalves.fastwebview.FastWebView
 import br.com.lucasgoncalves.fastwebview.FastWebViewComposable
+import br.com.lucad.mywebviewplayground.viewmodel.MainViewModel
 import org.json.JSONObject
 
 data class FastLogEntry(
@@ -83,6 +85,7 @@ data class FastLogEntry(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FastWebViewScreen(
+    viewModel: MainViewModel = viewModel(),
     onBackClick: () -> Unit
 ) {
     var selectedComponentIndex by remember { mutableIntStateOf(0) }
@@ -103,6 +106,21 @@ fun FastWebViewScreen(
         logs.add(0, FastLogEntry(tag = tag, message = message, isIncoming = isIncoming))
         if (logs.size > 50) {
             logs.removeAt(logs.lastIndex)
+        }
+    }
+
+    fun recordColdStartIfPending() {
+        val clickTime = viewModel.nativeBridge.metrics.value.navigationClickTimeMs
+        if (clickTime > 0 && !viewModel.nativeBridge.metrics.value.coldStartRecorded) {
+            val finishTime = System.currentTimeMillis()
+            val duration = finishTime - clickTime
+            viewModel.nativeBridge.updateMetrics { current ->
+                current.copy(
+                    timeToPageFinishedMs = duration,
+                    coldStartRecorded = true
+                )
+            }
+            viewModel.nativeBridge.logSystemEvent("FastWebView Cold Start cycle complete. Total Latency: ${duration}ms")
         }
     }
 
@@ -276,6 +294,7 @@ fun FastWebViewScreen(
                     componentTag = activeTag,
                     propsJson = currentPropsJson,
                     onMessageReceived = { msg ->
+                        recordColdStartIfPending()
                         try {
                             val json = JSONObject(msg)
                             val type = json.optString("type", "MSG")
@@ -294,10 +313,15 @@ fun FastWebViewScreen(
                         }
                     },
                     onBinaryReceived = { bytes ->
+                        recordColdStartIfPending()
                         addLog("IPC BIN", "Received ${bytes.size} bytes ArrayBuffer directly via Mojo IPC", true)
                     },
                     onFastWebViewCreated = { webView ->
                         activeFastWebView = webView
+                        webView.onHandshakeCompleted = {
+                            recordColdStartIfPending()
+                        }
+                        recordColdStartIfPending()
                         addLog("POOL", "FastWebView acquired from WebViewWarmupPool", false)
                     }
                 )
@@ -318,7 +342,7 @@ fun FastWebViewScreen(
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(12.dp)
                 ) {
-                    Icon(imageVector = Icons.Default.Send, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Icon(imageVector = Icons.AutoMirrored.Filled.Send, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(4.dp))
                     Text("Update Props (zero-eval)", fontSize = 11.sp)
                 }

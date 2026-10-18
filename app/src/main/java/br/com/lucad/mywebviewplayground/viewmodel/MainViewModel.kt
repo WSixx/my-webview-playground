@@ -172,7 +172,7 @@ class MainViewModel(
             _urlInput.value = url
         }
 
-        if (clickTime > 0) {
+        if (clickTime > 0 && nativeBridge.metrics.value.timeToPageStartedMs == 0L) {
             val duration = startedTime - clickTime
             nativeBridge.updateMetrics { current ->
                 current.copy(timeToPageStartedMs = duration)
@@ -184,17 +184,21 @@ class MainViewModel(
         _isLoading.value = false
         _loadingProgress.value = 100
         val finishedTime = System.currentTimeMillis()
-        val clickTime = nativeBridge.metrics.value.navigationClickTimeMs
 
-        if (clickTime > 0) {
-            val duration = finishedTime - clickTime
-            nativeBridge.updateMetrics { current ->
+        nativeBridge.updateMetrics { current ->
+            if (!current.coldStartRecorded && current.navigationClickTimeMs > 0) {
+                val duration = finishedTime - current.navigationClickTimeMs
                 current.copy(
                     timeToPageFinishedMs = duration,
                     coldStartRecorded = true
                 )
+            } else {
+                current
             }
-            nativeBridge.logSystemEvent("WebView Cold Start cycle complete. Total Latency: ${duration}ms")
+        }
+        val currentMetrics = nativeBridge.metrics.value
+        if (currentMetrics.coldStartRecorded) {
+            nativeBridge.logSystemEvent("WebView Cold Start cycle complete. Total Latency: ${currentMetrics.timeToPageFinishedMs}ms")
         }
     }
 

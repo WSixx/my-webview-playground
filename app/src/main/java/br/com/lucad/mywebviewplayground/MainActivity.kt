@@ -84,6 +84,7 @@ fun AppNavigation(viewModel: MainViewModel) {
                 }
                 is AppRoute.FastWebView -> NavEntry(key) {
                     FastWebViewScreen(
+                        viewModel = viewModel,
                         onBackClick = {
                             if (backStack.size > 1) {
                                 backStack.removeAt(backStack.lastIndex)

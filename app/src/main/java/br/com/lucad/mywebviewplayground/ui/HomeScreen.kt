@@ -34,7 +34,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.Bolt
-import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Memory
 import androidx.compose.material.icons.filled.RestartAlt
@@ -89,7 +88,10 @@ fun HomeScreen(
             viewModel.onOpenWebViewClicked()
             onNavigateToWebView()
         },
-        onOpenFastWebView = onNavigateToFastWebView,
+        onOpenFastWebView = {
+            viewModel.onOpenWebViewClicked()
+            onNavigateToFastWebView()
+        },
         onResetState = { viewModel.resetColdStartAndProcess(context) }
     )
 }
@@ -240,7 +242,7 @@ fun HomeScreenContent(
                                 modifier = Modifier.size(20.dp)
                             )
                             Text(
-                                text = "⚡ Test FastWebView (Mojo IPC)",
+                                text = "Test FastWebView (Mojo IPC)",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -410,7 +412,7 @@ fun HomeScreenContent(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
-                                text = "No cold start benchmark recorded yet. Enable Pre-warm below and click '🚀 Open WebView Playground' to measure!",
+                                text = "No cold start benchmark recorded yet. Enable Pre-warm below and click 'Open WebView Playground' to measure!",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.padding(12.dp)
@@ -497,7 +499,7 @@ fun HomeScreenContent(
                         modifier = Modifier.size(22.dp)
                     )
                     Text(
-                        text = "🚀 Open WebView Playground",
+                        text = "Open WebView Playground",
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold
                     )
