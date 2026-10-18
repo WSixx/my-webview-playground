@@ -1,40 +1,217 @@
-# My Webview Playground
+# FastWebView & WebComponent Playground
 
-An Android application demonstrating advanced `WebView` integration, bi-directional JavaScript bridging, benchmarking, pre-warming, and modern Jetpack Compose UI architecture.
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Android MinSDK](https://img.shields.io/badge/MinSDK-28-green.svg)](https://developer.android.com/about/versions/pie)
+[![TargetSDK](https://img.shields.io/badge/TargetSDK-37-brightgreen.svg)](https://developer.android.com/about/versions/16)
 
-## Project Architecture & Build Logic
-
-The project uses modern Gradle build conventions with a composite `build-logic` setup and organized Version Catalog (`gradle/libs.versions.toml`).
-
-### Convention Plugins (`build-logic`)
-
-- **`mywebviewplayground.android.application`**: Configures Android Application DSL defaults (SDK versions `compileSdk 37`, `minSdk 28`, `targetSdk 37`, Java 21 compatibility, test runners).
-- **`mywebviewplayground.android.compose`**: Configures Jetpack Compose build features and dependencies.
-
-### Dependency Catalog (`gradle/libs.versions.toml`)
-
-Dependencies are organized into clean logical categories:
-- `# AndroidX Core & Lifecycle` - Core KTX, Coroutines, Lifecycle runtime and ViewModel composables.
-- `# Jetpack Compose & UI` - Activity Compose, Compose BOM, Material 3, Icons.
-- `# Navigation` - Jetpack Navigation 3 runtime and UI, Kotlinx Serialization.
-- `# WebKit` - AndroidX WebKit for extended WebView features.
-- `# Testing & Quality` - JUnit, Coroutines Test, Espresso, Compose UI Testing.
+**FastWebView** is a production-ready, zero-latency Android WebView SDK created by **Lucas S Goncalves**. Designed for high-performance WebComponent and micro-frontend rendering, `fastwebview` eliminates traditional WebView overhead through direct Chromium Mojo IPC messaging, RAM asset pre-loading with V8 bytecode caching, background engine pre-warming, and first-class support for Jetpack Compose and React Native.
 
 ---
 
-## Mock React / WebComponent Bundle Architecture
+## Key Features
 
-In `My Webview Playground`, the local asset `mock_webcomponent.html` (`app/src/main/assets/mock_webcomponent.html`) serves as a self-contained representation of a compiled React or WebComponent production bundle.
+- ⚡ **Chromium Mojo IPC Zero-Eval Messaging**: Bypasses legacy string-eval bridges (`evaluateJavascript`) by utilizing `addWebMessageListener` and `JavaScriptReplyProxy` for direct, high-speed, bidirectional native <-> JS communication.
+- 📦 **RAM Asset Caching & V8 Bytecode Cache**: Serves local shell HTML, bundles, and styles directly from RAM using `WebViewAssetLoader` with `Cache-Control: public, max-age=31536000, immutable` headers, enabling Chromium's V8 engine to store and execute compiled bytecode.
+- 🔥 **Background Engine Pre-Warming Pool**: `WebViewWarmupPool` leverages `WebViewStartUpConfig` via `WebViewCompat.startUpWebView` to prime Chromium engines in the background and uses `MutableContextWrapper` for instant instance pooling without Activity context leaks.
+- 🔄 **Zero-Copy Binary Transfer**: Transfer raw byte arrays (`ByteArray` / `ArrayBuffer`) directly over Mojo IPC channels without Base64 encoding/decoding overhead.
+- 🎨 **Jetpack Compose Native Support**: Idiomatic `FastWebViewComposable` component with automatic state lifecycle management and pool disposal.
+- ⚛️ **React Native Compatibility**: Built-in `FastWebComponentViewManager` bridge for seamless integration into React Native apps.
 
-### Bundled Local Loading vs. Remote Server Loading
+---
 
-| Feature / Metric | Bundled Local Loading (`file:///android_asset/...` or `http://appassets.androidlocal/...`) | Remote Server Loading (`https://...`) |
+## Installation
+
+### 1. Add Repository (JitPack)
+
+In your root `settings.gradle.kts`:
+
+```kotlin
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url = java.net.URI("https://jitpack.io") }
+    }
+}
+```
+
+### 2. Add Dependency
+
+In your app module `build.gradle.kts`:
+
+```kotlin
+dependencies {
+    // Standalone SDK via JitPack
+    implementation("com.github.lucasgoncalves:fastwebview:1.0.0")
+
+    // Or via local project / composite build module
+    // implementation(project(":fastwebview"))
+}
+```
+
+---
+
+## Quick Start Guide
+
+### 1. Pre-warm Engine in `Application`
+
+Eliminate cold-start latency by initializing the Chromium engine and asset cache in your `Application` class:
+
+```kotlin
+import android.app.Application
+import br.com.lucasgoncalves.fastwebview.WebViewWarmupPool
+
+class MainApplication : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        // Pre-warms Chromium rendering engine and loads critical assets into RAM
+        WebViewWarmupPool.warmUpEngineAndPool(this)
+    }
+}
+```
+
+### 2. Jetpack Compose Integration
+
+Render WebComponents seamlessly with `FastWebViewComposable`:
+
+```kotlin
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import br.com.lucasgoncalves.fastwebview.FastWebViewComposable
+
+@Composable
+fun CheckoutScreen() {
+    FastWebViewComposable(
+        modifier = Modifier.fillMaxSize(),
+        componentTag = "checkout-widget",
+        propsJson = """{"price": 149.99, "currency": "USD"}""",
+        onMessageReceived = { message ->
+            println("Received message from JS: $message")
+        },
+        onBinaryReceived = { bytes ->
+            println("Received binary payload of size: ${bytes.size}")
+        }
+    )
+}
+```
+
+### 3. Classic Android Views / Activity
+
+Acquire pre-warmed instances from `WebViewWarmupPool`:
+
+```kotlin
+import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
+import br.com.lucasgoncalves.fastwebview.FastWebView
+import br.com.lucasgoncalves.fastwebview.WebViewWarmupPool
+
+class MainActivity : AppCompatActivity() {
+
+    private lateinit var fastWebView: FastWebView
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        // Acquire pre-warmed instance re-parented to Activity context
+        fastWebView = WebViewWarmupPool.acquireFastWebView(this)
+        setContentView(fastWebView)
+
+        fastWebView.onNativeMessageReceived = { msg ->
+            println("Native received: $msg")
+        }
+
+        // Mount WebComponent with props
+        fastWebView.mountComponent("checkout-widget", """{"item": "Laptop"}""")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Release instance back to pool for future reuse
+        WebViewWarmupPool.releaseFastWebView(fastWebView)
+    }
+}
+```
+
+### 4. React Native Integration
+
+Register `FastWebComponentViewManager` in your React Native package:
+
+```kotlin
+import com.facebook.react.ReactPackage
+import com.facebook.react.bridge.NativeModule
+import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.uimanager.ViewManager
+import br.com.lucasgoncalves.fastwebview.FastWebComponentViewManager
+
+class FastWebViewPackage : ReactPackage {
+    override fun createNativeModules(reactContext: ReactApplicationContext): List<NativeModule> = emptyList()
+
+    override fun createViewManagers(reactContext: ReactApplicationContext): List<ViewManager<*, *>> {
+        return listOf(FastWebComponentViewManager())
+    }
+}
+```
+
+Use in JSX/TSX:
+
+```tsx
+import { requireNativeComponent } from 'react-native';
+
+const FastWebComponentView = requireNativeComponent('FastWebComponentView');
+
+export const CheckoutWidget = () => (
+  <FastWebComponentView
+    style={{ flex: 1 }}
+    componentTag="checkout-widget"
+    propsJson={JSON.stringify({ price: 149.99, quantity: 2 })}
+  />
+);
+```
+
+---
+
+## Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      FastWebView App                        │
+└──────────────────────────────┬──────────────────────────────┘
+                               │
+               ┌───────────────┴───────────────┐
+               │  WebViewWarmupPool (Singleton) │
+               └───────────────┬───────────────┘
+                               │ (Pre-warms & Pools)
+               ┌───────────────▼───────────────┐
+               │          FastWebView          │
+               └──────┬─────────────────┬──────┘
+                      │                 │
+    (Mojo IPC Channel)│                 │(RAM-Cached Assets)
+                      ▼                 ▼
+             JavaScriptReplyProxy   RamCachedAssetHandler
+                      │                 │
+                      ▼                 ▼
+          ┌──────────────────────────────────┐
+          │     Chromium WebView Engine      │
+          └──────────────────────────────────┘
+```
+
+---
+
+## Local vs. Remote Loading Comparison
+
+| Metric / Feature | Bundled Local Assets (`RamCachedAssetHandler`) | Remote Server (`https://...`) |
 | :--- | :--- | :--- |
-| **Availability & Offline** | **100% Offline Compatible**: Guaranteed availability without network connectivity or cellular signal. | **Network Dependent**: Requires active internet connection unless complex Service Worker / PWA caching is configured. |
-| **Latency & Load Speed** | **Zero Network Overhead**: Immediate file I/O from APK storage, yielding DOM-ready times typically under 50ms. | **Network Overhead**: Subject to DNS resolution, TLS handshake, and network RTT, leading to slower initial paint times. |
-| **Security & Integrity** | **High Integrity**: Assets are signed as part of the APK bundle. Tamper-resistant against MITM or remote script injection. | **Dynamic / Content Risks**: Allows real-time remote updates, but requires domain verification, CSP headers, and CORS handling. |
-| **JS Bridge Interaction** | **Instant Bridge Readiness**: Exposes `@JavascriptInterface` or `postMessage` channels immediately upon page initialization. | **Delayed Bridge Setup**: Exposing native interfaces over remote URLs requires strict domain allowlisting and origin validation. |
-| **Updates & Lifecycle** | **App Release Bound**: Updating the frontend bundle requires an APK/AAB app update or OTA asset bundle sync. | **Instant Deployment**: Pushing web content updates to the server reflects immediately across all client apps without app updates. |
+| **Availability** | **100% Offline Compatible** | Requires active network connection |
+| **Latency & First Paint** | **< 50ms DOM Ready** (RAM I/O + V8 Cache) | Network RTT + DNS + TLS overhead |
+| **JS Bridge Speed** | **Zero-Eval Mojo IPC Handshake** | Subject to domain validation delays |
+| **Security & Integrity** | **Tamper-resistant** (Signed APK bundle) | Requires strict CSP and CORS headers |
+
+---
+
+## Detailed Documentation
+
+For comprehensive API specifications, Mojo IPC protocol details, and advanced optimization guidelines, see the [fastwebview Library Documentation](fastwebview/README.md).
 
 ---
 
@@ -42,3 +219,25 @@ In `My Webview Playground`, the local asset `mock_webcomponent.html` (`app/src/m
 
 - **Build Debug APK**: `./gradlew assembleDebug`
 - **Run Unit Tests**: `./gradlew test`
+
+---
+
+## License & Author
+
+Created by **Lucas S Goncalves**.
+
+```
+Copyright (C) 2025 Lucas S Goncalves
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+```
