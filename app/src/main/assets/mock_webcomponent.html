@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mock React WebComponent Playground</title>
+    <style>
+        :root {
+            --primary-color: #6200ee;
+            --primary-variant: #3700b3;
+            --secondary-color: #03dac6;
+            --background: #f8f9fa;
+            --surface: #ffffff;
+            --on-surface: #1f2937;
+            --text-secondary: #6b7280;
+            --border-color: #e5e7eb;
+            --border-radius: 12px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --primary-color: #bb86fc;
+                --primary-variant: #3700b3;
+                --secondary-color: #03dac6;
+                --background: #121212;
+                --surface: #1e1e1e;
+                --on-surface: #f3f4f6;
+                --text-secondary: #9ca3af;
+                --border-color: #374151;
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 16px;
+            background-color: var(--background);
+            color: var(--on-surface);
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            margin-bottom: 16px;
+        }
+
+        .header h1 {
+            font-size: 1.4rem;
+            margin: 0 0 4px 0;
+            color: var(--primary-color);
+        }
+
+        .header p {
+            margin: 0;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .card {
+            background-color: var(--surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .card h2 {
+            font-size: 1.1rem;
+            margin-top: 0;
+            margin-bottom: 8px;
+            color: var(--on-surface);
+        }
+
+        .card-description {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 12px;
+        }
+
+        .counter-display {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin: 8px 0;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: #ffffff;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+        }
+
+        button:active {
+            transform: scale(0.97);
+        }
+
+        button.secondary {
+            background-color: transparent;
+            color: var(--primary-color);
+            border: 1.5px solid var(--primary-color);
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            background-color: var(--surface);
+            color: var(--on-surface);
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--primary-color);
+        }
+
+        .state-code {
+            background-color: rgba(0, 0, 0, 0.04);
+            padding: 10px;
+            border-radius: 8px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.8rem;
+            color: var(--on-surface);
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .state-code {
+                background-color: rgba(255, 255, 255, 0.06);
+            }
+        }
+
+        .log-box {
+            background: #0f172a;
+            color: #38bdf8;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            padding: 12px;
+            border-radius: 8px;
+            max-height: 180px;
+            overflow-y: auto;
+            font-size: 0.8rem;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .log-entry {
+            margin-bottom: 4px;
+            border-bottom: 1px dashed #334155;
+            padding-bottom: 2px;
+        }
+
+        .log-time {
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>WebView Component Host</h1>
+            <p>React Native / WebComponent Sample Page for Native Experiments</p>
+        </div>
+
+        <!-- Custom Web Component -->
+        <react-mock-component></react-mock-component>
+    </div>
+
+    <script>
+        // Custom Web Component class simulating React State & Interactive Controls
+        class ReactMockComponent extends HTMLElement {
+            constructor() {
+                super();
+                // Simulated React Component State
+                this.state = {
+                    count: 0,
+                    textInput: "",
+                    lastEvent: "Initialized",
+                    logs: []
+                };
+            }
+
+            connectedCallback() {
+                this.render();
+                this.setupEventListeners();
+                this.updateDOM();
+            }
+
+            // Simulated React setState
+            setState(partialState) {
+                this.state = { ...this.state, ...partialState };
+                this.updateDOM();
+            }
+
+            addLog(message, direction = "INFO") {
+                const timestamp = new Date().toLocaleTimeString();
+                const logItem = { timestamp, message, direction };
+                const updatedLogs = [logItem, ...this.state.logs].slice(0, 50);
+                this.state.logs = updatedLogs;
+                this.updateDOM();
+            }
+
+            dispatchNativeEvent(eventType, payload) {
+                const message = {
+                    type: eventType,
+                    payload: payload,
+                    timestamp: Date.now()
+                };
+
+                const messageString = JSON.stringify(message);
+                this.state.lastEvent = eventType;
+
+                this.addLog(`[OUT -> Native] ${eventType}: ${JSON.stringify(payload)}`, "OUT");
+
+                // Dispatch to window.AndroidBridge / window.NativeBridge or fallback
+                if (window.AndroidBridge && typeof window.AndroidBridge.postMessage === 'function') {
+                    window.AndroidBridge.postMessage(messageString);
+                } else if (window.AndroidBridge && typeof window.AndroidBridge.onMessage === 'function') {
+                    window.AndroidBridge.onMessage(messageString);
+                } else if (window.NativeBridge && typeof window.NativeBridge.postMessage === 'function') {
+                    window.NativeBridge.postMessage(messageString);
+                } else if (window.NativeBridge && typeof window.NativeBridge.onMessageFromWeb === 'function') {
+                    window.NativeBridge.onMessageFromWeb(messageString);
+                } else {
+                    console.log("NativeBridge message dispatched:", messageString);
+                }
+            }
+
+            render() {
+                this.innerHTML = `
+                    <div class="card">
+                        <h2>Sample Component (&lt;react-mock-component&gt;)</h2>
+                        <div class="card-description">
+                            Interactive state management and bidirectional NativeBridge messaging example.
+                        </div>
+
+                        <div style="margin-bottom: 16px;">
+                            <label style="font-weight: 600; font-size: 0.9rem;">Counter State:</label>
+                            <div class="counter-display" id="counter-value">0</div>
+                            <div class="controls-grid">
+                                <button id="btn-inc">+ Increment</button>
+                                <button id="btn-dec" class="secondary">- Decrement</button>
+                                <button id="btn-reset" class="secondary">Reset</button>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 16px;">
+                            <label for="text-input" style="font-weight: 600; font-size: 0.9rem;">Text Input:</label>
+                            <input type="text" id="text-input" placeholder="Type a message for Native Android..." value="${this.state.textInput}">
+                            <div class="controls-grid" style="margin-top: 8px;">
+                                <button id="btn-send-text">Send Text to Native</button>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 16px;">
+                            <label style="font-weight: 600; font-size: 0.9rem;">Current State Card:</label>
+                            <div class="state-code" id="state-display"></div>
+                        </div>
+
+                        <div>
+                            <label style="font-weight: 600; font-size: 0.9rem;">Bridge Message Log:</label>
+                            <div class="log-box" id="log-box"></div>
+                            <div class="controls-grid" style="margin-top: 8px;">
+                                <button id="btn-clear-logs" class="secondary">Clear Logs</button>
+                                <button id="btn-trigger-action">Trigger Action Event</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            setupEventListeners() {
+                this.querySelector("#btn-inc")?.addEventListener("click", () => {
+                    const newCount = this.state.count + 1;
+                    this.setState({ count: newCount });
+                    this.dispatchNativeEvent("COUNTER_CHANGED", { count: newCount, action: "INCREMENT" });
+                });
+
+                this.querySelector("#btn-dec")?.addEventListener("click", () => {
+                    const newCount = this.state.count - 1;
+                    this.setState({ count: newCount });
+                    this.dispatchNativeEvent("COUNTER_CHANGED", { count: newCount, action: "DECREMENT" });
+                });
+
+                this.querySelector("#btn-reset")?.addEventListener("click", () => {
+                    this.setState({ count: 0 });
+                    this.dispatchNativeEvent("COUNTER_CHANGED", { count: 0, action: "RESET" });
+                });
+
+                const inputEl = this.querySelector("#text-input");
+                inputEl?.addEventListener("input", (e) => {
+                    this.state.textInput = e.target.value;
+                    this.updateStateCard();
+                });
+
+                this.querySelector("#btn-send-text")?.addEventListener("click", () => {
+                    const text = this.querySelector("#text-input")?.value || "";
+                    this.dispatchNativeEvent("TEXT_SUBMITTED", { text: text });
+                });
+
+                this.querySelector("#btn-clear-logs")?.addEventListener("click", () => {
+                    this.state.logs = [];
+                    this.updateDOM();
+                });
+
+                this.querySelector("#btn-trigger-action")?.addEventListener("click", () => {
+                    this.dispatchNativeEvent("CUSTOM_ACTION", { message: "Trigger action event clicked from WebComponent" });
+                });
+            }
+
+            updateDOM() {
+                const counterEl = this.querySelector("#counter-value");
+                if (counterEl) counterEl.textContent = this.state.count;
+
+                this.updateStateCard();
+
+                const logBox = this.querySelector("#log-box");
+                if (logBox) {
+                    if (this.state.logs.length === 0) {
+                        logBox.innerHTML = '<span style="color: #64748b; font-style: italic;">No bridge messages logged yet.</span>';
+                    } else {
+                        logBox.innerHTML = this.state.logs.map(log => `
+                            <div class="log-entry">
+                                <span class="log-time">[${log.timestamp}]</span> <strong>${log.direction}:</strong> ${this.escapeHtml(log.message)}
+                            </div>
+                        `).join("");
+                    }
+                }
+            }
+
+            updateStateCard() {
+                const stateDisplayEl = this.querySelector("#state-display");
+                if (stateDisplayEl) {
+                    const stateCopy = {
+                        count: this.state.count,
+                        textInput: this.state.textInput,
+                        lastEvent: this.state.lastEvent,
+                        totalLogs: this.state.logs.length
+                    };
+                    stateDisplayEl.textContent = JSON.stringify(stateCopy, null, 2);
+                }
+            }
+
+            escapeHtml(str) {
+                return String(str)
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;");
+            }
+
+            // Method called when Android native sends message to web
+            onMessageFromNative(data) {
+                let parsed;
+                try {
+                    parsed = typeof data === 'string' ? JSON.parse(data) : data;
+                } catch (e) {
+                    parsed = data;
+                }
+
+                this.addLog(`[IN <- Native]: ${typeof parsed === 'object' ? JSON.stringify(parsed) : parsed}`, "IN");
+                this.state.lastEvent = `Incoming (${parsed && parsed.type ? parsed.type : 'Message'})`;
+
+                if (parsed && (parsed.action === "SET_COUNTER" || parsed.type === "COUNTER_CHANGED")) {
+                    const val = parsed.value ?? parsed.count;
+                    if (typeof val === 'number') {
+                        this.setState({ count: val });
+                    }
+                } else if (parsed && parsed.action === "ECHO") {
+                    this.dispatchNativeEvent("ECHO_RESPONSE", { original: parsed });
+                } else {
+                    this.updateStateCard();
+                }
+            }
+        }
+
+        // Register custom element
+        customElements.define("react-mock-component", ReactMockComponent);
+
+        // Global Native Bridge setup for receiving calls from Android Native
+        window.NativeBridge = window.NativeBridge || {};
+        window.AndroidBridge = window.AndroidBridge || {};
+
+        // Helper function for Android native code to evaluate e.g. postMessageToWeb(...)
+        window.postMessageToWeb = function(message) {
+            const component = document.querySelector("react-mock-component");
+            if (component && typeof component.onMessageFromNative === 'function') {
+                component.onMessageFromNative(message);
+            }
+        };
+
+        window.NativeBridge.onMessageFromNative = function(message) {
+            window.postMessageToWeb(message);
+        };
+
+        window.AndroidBridge.onMessageFromNative = function(message) {
+            window.postMessageToWeb(message);
+        };
+    </script>
+</body>
+</html>
