@@ -8,4 +8,8 @@
 .externalNativeBuild
 .cxx
 local.properties
+.artifacts
 .artifacts/
+.agent
+.agent/
+/build-logic/build/
